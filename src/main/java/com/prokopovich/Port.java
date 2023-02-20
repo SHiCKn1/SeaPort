@@ -1,11 +1,14 @@
 package com.prokopovich;
 
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 public class Port {
+    //TODO разнести процедуры и классы по пакетам
 
     private static final int NUMBER_OF_BERTHS = 5;
     private static final boolean[] BERTHS = new boolean[NUMBER_OF_BERTHS];
@@ -18,15 +21,19 @@ public class Port {
     private static final Semaphore SEMAPHORE = new Semaphore(NUMBER_OF_BERTHS, true);
 
     public static void main(String[] args) throws InterruptedException {
-        for (int i = 1; i <= 7; i++) {
-
-            new Thread(new Ship("Ship №" + i,i)).start();
-            Thread.sleep(400);
+        try {
+            PortManager();
+        } catch (InterruptedException e) {
+            logger.log(Level.ERROR, e.getMessage());
         }
     }
 
-    public void PortManager() throws InterruptedException {
-
+    public static void PortManager() throws InterruptedException {
+        for (int i = 1; i <= 7; i++) {
+            //TODO переделать под ExecutorService
+            new Thread(new Ship("Ship №" + i,i)).start();
+            TimeUnit.MILLISECONDS.sleep(400);
+        }
     }
 
 
@@ -45,7 +52,8 @@ public class Port {
 
         @Override
         public void run() {
-            System.out.printf("The ship %S sailed into the port.\n", shipName);
+
+            logger.log(Level.INFO, "The ship " +  shipName + " sailed into the port.");
             try {
                 SEMAPHORE.acquire();
 
@@ -57,7 +65,7 @@ public class Port {
                         if (!BERTHS[i]) {
                             BERTHS[i] = true;
                             berthNumber = i;
-                            System.out.printf("The ship %S has berthed %d.\n", shipName, i);
+                            logger.log(Level.INFO, "The ship " +  shipName + " has berthed " + berthNumber + ".");
                             break;
                         }
                 }
@@ -70,9 +78,10 @@ public class Port {
 
 
                 SEMAPHORE.release();
-                System.out.printf("The ship %S  left the berthed.\n", shipName);
+                logger.log(Level.INFO, "The ship " +  shipName + "  left the berthed");
             } catch (InterruptedException e) {
                 //TODO написать warn
+                logger.log(Level.ERROR, e.getMessage());
             }
 
         }
