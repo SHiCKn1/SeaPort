@@ -1,5 +1,6 @@
 package com.prokopovich;
 
+import com.prokopovich.action.PortManager;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,23 +21,14 @@ public class Port {
 
     private static final Semaphore SEMAPHORE = new Semaphore(NUMBER_OF_BERTHS, true);
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) {
         try {
-            PortManager();
+            PortManager.startWork();
+            //PortManager
         } catch (InterruptedException e) {
             logger.log(Level.ERROR, e.getMessage());
         }
     }
-
-    public static void PortManager() throws InterruptedException {
-        for (int i = 1; i <= 7; i++) {
-            //TODO переделать под ExecutorService
-            new Thread(new Ship("Ship №" + i,i)).start();
-            TimeUnit.MILLISECONDS.sleep(400);
-        }
-    }
-
-
     public static class Ship implements Runnable {
         private String shipName;
         private int containerCapacity;
